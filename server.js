@@ -52,7 +52,11 @@ async function speakText(text, filename = 'out.wav') {
 
   const data = response?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
   const audioBuffer = Buffer.from(data, 'base64');
-  await saveWaveFile(filename, audioBuffer);
+  console.log("Audio buffer size:", audioBuffer.length);
+  console.log('✅ Audio saved to public/out.wav');
+  // await saveWaveFile(filename, audioBuffer);
+  await saveWaveFile(path.join(__dirname, 'public', filename), audioBuffer);
+
   // await player.play({ path: filename });
 }
 
@@ -132,6 +136,12 @@ use end words like chmka,clear,kuch to bolo pop-con khne aay ho kya ..or create 
 
 // ✅ Serve frontend
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Serve audio explicitly with correct headers
+app.get('/out.wav', (req, res) => {
+  res.setHeader('Content-Type', 'audio/wav');
+  res.sendFile(path.join(__dirname, 'public', 'out.wav'));
+});
 
 app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
