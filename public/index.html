@@ -176,7 +176,7 @@
 
     // Send message to server
     async function ChattingWithGemini(message) {
-      const response = await fetch("http://localhost:5501/ask", {
+      const response = await fetch("/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
