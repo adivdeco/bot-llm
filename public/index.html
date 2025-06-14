@@ -205,7 +205,7 @@
        addMessageToUI(botResponseText, 'bot');
 
 // 🔊 Play the audio response (with cache-busting query)
-      const audio = new Audio('out.wav?ts=' + Date.now());
+      const audio = new Audio('https://llm-voice-bot.onrender.com/out.wav?ts=' + Date.now());
       audio.play();
 
 
