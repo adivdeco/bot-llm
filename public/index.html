@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coder Army Enhanced</title>
+  <link rel="stylesheet" href="style.css" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+  
+
+  <section class="wrapper">
+    <div class="hero"></div>
+
+    <div class="header">
+    <header>
+    <div class="logo"><img src="./images/Black_Logo.png" alt="Logo"></div>
+    <nav>
+      <a href="#" class="active">Home</a>
+      <a href="#">About Us</a>
+      <a href="#">Tutorials</a>
+      <a href="#">Contact</a>
+    </nav>
+    <div class="buttons">
+      <button class="login">Login</button>
+      <button class="dashboard">Dashboard</button>
+    </div>
+  </header>
+    </div>
+
+  <div class="botposn">
+  <div class="ai-bot">
+  <div class="head">
+    <div class="face">
+      <div class="eyes"> </div>
+      <div class="mouth"> </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="hidekro">
+    <div class="content">
+      <h1 class="h1--scalingSize" data-text="Be a part of our Army!">Be a part of our <span>Army!</span></h1>
+      <p>A community of coders, making the world a better place.</p>
+
+      <div class="cta">
+        
+      </div>
+      <input type="checkbox" id="switch">
+      <label for="switch"><span><span class="icon">→</span> Switch Background</span></label>
+      <br>
+      <button id="chatBtn">Chat with AI</button>
+    </div>
+</div>
+  </section>
+
+  <section id="chatPage" style="display: none;">
+  
+  <div class="chat-container">
+  
+
+  <div class="chat-header">
+    <div class="header-content">
+      <div> <h1>Rohit📚👨🏻‍🏫</h1> </div>
+      <div> <button id="backBtn">⬅ Back</button></div>
+    </div>
+  </div>
+
+  <div class="welcome-banner">
+     Chat with Rohit sir - Ask your douts. or might it take time to responce in form of audio so coperate.
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <div class="message bot">
+      <span class="bot-message-decoration left"></span>
+      <div class="bubble">
+        Hey adiv! 😊 Kaise ho? Kon sa concept nhi chmka? 💭
+      </div>
+      <span class="bot-message-decoration right"></span>
+    </div>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" id="userInput" placeholder="Message to Rohit bhiya..." />
+    <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+</section>
+
+
+   <div class="socials">
+    <a href="https://www.linkedin.com/in/adiv-singh-207233254/"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" />
+   </a>
+        <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
+   </div>
+
+</body>
+<script> 
+
+  //  const chatBtn = document.getElementById("chatBtn");
+  // const backBtn = document.getElementById("backBtn");
+  // const hidekro = document.querySelector(".hidekro");
+  // const chatPage = document.getElementById("chatPage");
+  // const botposn = document.querySelector(".botposn")
+  // const social  = document.querySelector(".socials");
+
+  // chatBtn.addEventListener("click", () => {
+  //   hidekro.style.display = "none";
+  //   chatPage.style.display = "block";
+  //   social.style.display = "none";
+  //   botposn.style.display ="none"
+  // });
+
+  // backBtn.addEventListener("click", () => {
+  //   chatPage.style.display = "none";
+  //   botposn.style.display = "block"
+  //   hidekro.style.display = "block";
+  //   social.style.display = "block";
+  // });
+
+ 
+  document.addEventListener('DOMContentLoaded', () => {
+    const chatMessagesEl = document.getElementById('chatMessages');
+    const userInputEl = document.getElementById('userInput');
+    const sendButtonEl = document.getElementById('sendButton');
+    const chatBtn = document.getElementById("chatBtn");
+    const backBtn = document.getElementById("backBtn");
+    const hidekro = document.querySelector(".hidekro");
+    const chatPage = document.getElementById("chatPage");
+    const botposn = document.querySelector(".botposn");
+    const social = document.querySelector(".socials");
+
+    // Show/Hide chat window
+    chatBtn.addEventListener("click", () => {
+      hidekro.style.display = "none";
+      chatPage.style.display = "block";
+      social.style.display = "none";
+      botposn.style.display = "none";
+    });
+
+    backBtn.addEventListener("click", () => {
+      chatPage.style.display = "none";
+      botposn.style.display = "block";
+      hidekro.style.display = "block";
+      social.style.display = "block";
+    });
+
+    // Append message to UI
+    function addMessageToUI(text, sender, isTyping = false) {
+
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', sender);
+
+      if (isTyping) {
+        messageElement.classList.add('typing');
+        messageElement.innerHTML = `
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        `;
+      } else {
+        messageElement.innerHTML = `<div class="bubble"><span class="message-text">${text}</span></div>`;
+      }
+
+      chatMessagesEl.appendChild(messageElement);
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+      return messageElement;
+    }
+
+    // Send message to server
+    async function ChattingWithGemini(message) {
+      const response = await fetch("http://localhost:5501/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await response.json();
+      return data.reply;
+    }
+
+    async function handleUserSendMessage() {
+      const messageText = userInputEl.value.trim();
+      if (!messageText) return;
+
+      addMessageToUI(messageText, 'user');
+      userInputEl.value = '';
+      userInputEl.focus();
+
+      const typingIndicator = addMessageToUI('', 'bot', true);
+
+      try {
+        
+        const botResponseText = await ChattingWithGemini(messageText);
+       chatMessagesEl.removeChild(typingIndicator);
+       addMessageToUI(botResponseText, 'bot');
+
+// 🔊 Play the audio response (with cache-busting query)
+      const audio = new Audio('out.wav?ts=' + Date.now());
+      audio.play();
+
+
+        // const botResponseText = await ChattingWithGemini(messageText);
+        // chatMessagesEl.removeChild(typingIndicator);
+        // addMessageToUI(botResponseText, 'bot');
+      } catch (error) {
+        console.error("Error talking to server:", error);
+        chatMessagesEl.removeChild(typingIndicator);
+        addMessageToUI("😢 Rohit sir ka server down ho gaya lagta hai!", 'bot');
+      }
+    }
+
+    sendButtonEl.addEventListener('click', handleUserSendMessage);
+    userInputEl.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        handleUserSendMessage();
+      }
+    });
+
+    userInputEl.focus();
+  });
+
+
+
+
+</script>
+
+</html>
+
+
+
