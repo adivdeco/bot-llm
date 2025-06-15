@@ -10,7 +10,7 @@
 </head>
 <body>
   
-
+<!-- page1 -->
   <section class="wrapper">
     <div class="hero"></div>
 
@@ -30,6 +30,7 @@
   </header>
     </div>
 
+<!-- bot -->
   <div class="botposn">
   <div class="ai-bot">
   <div class="head">
@@ -41,9 +42,10 @@
 </div>
 </div>
 
+<!-- main part pg1 -->
 <div class="hidekro">
     <div class="content">
-      <h1 class="h1--scalingSize" data-text="Be a part of our Army!">Be a part of our <span>Army!</span></h1>
+      <h1 class="h1--scalingSize" data-text="Be a part of our Army!">Be a part of our <span style="color: rgb(43, 226, 101);">Army!</span></h1>
       <p>A community of coders, making the world a better place.</p>
 
       <div class="cta">
@@ -57,6 +59,7 @@
 </div>
   </section>
 
+<!-- page2 -->
   <section id="chatPage" style="display: none;">
   
   <div class="chat-container">
@@ -70,16 +73,16 @@
   </div>
 
   <div class="welcome-banner">
-     Chat with Rohit sir - Ask your douts. or might it take time to responce in form of audio so coperate.
+     Chat with Rohit sir - Ask your douts. # or might it take time to responce in form of audio so coperate.
   </div>
 
   <div class="chat-messages" id="chatMessages">
     <div class="message bot">
-      <span class="bot-message-decoration left"></span>
+      <span class="bot-message-decoration left">🤖</span>
       <div class="bubble">
-        Hey adiv! 😊 Kaise ho? Kon sa concept nhi chmka? 💭
+        Hey! 😊 Kaise ho? Kon sa concept nhi chmka? 💭
       </div>
-      <span class="bot-message-decoration right"></span>
+      <!-- <span class="bot-message-decoration right"></span> -->
     </div>
   </div>
 
@@ -132,25 +135,22 @@
     const backBtn = document.getElementById("backBtn");
     const hidekro = document.querySelector(".hidekro");
     const chatPage = document.getElementById("chatPage");
-    const botposn = document.querySelector(".botposn");
     const social = document.querySelector(".socials");
+
+     let isProcessing = false; 
 
     // Show/Hide chat window
     chatBtn.addEventListener("click", () => {
-      hidekro.style.display = "none";
       chatPage.style.display = "block";
       social.style.display = "none";
-      botposn.style.display = "none";
     });
 
     backBtn.addEventListener("click", () => {
       chatPage.style.display = "none";
-      botposn.style.display = "block";
-      hidekro.style.display = "block";
       social.style.display = "block";
     });
 
-    // Append message to UI
+    // Append message to UI ,responce of bot
     function addMessageToUI(text, sender, isTyping = false) {
 
       const messageElement = document.createElement('div');
@@ -189,20 +189,23 @@
     }
 
     async function handleUserSendMessage() {
-      const messageText = userInputEl.value.trim();
-      if (!messageText) return;
+      if (isProcessing) return;
+      const messageText = userInputEl.value.trim(); // remove unwanted space...
+      if (!messageText) return; 
+   
+      isProcessing = true;
+      sendButtonEl.disabled = true;
 
-      addMessageToUI(messageText, 'user');
+      addMessageToUI(messageText, 'user');  //call that function or pass inp.value or sender user.
       userInputEl.value = '';
       userInputEl.focus();
 
-      const typingIndicator = addMessageToUI('', 'bot', true);
+      const typingIndicator = addMessageToUI('', 'bot', true);  //after sending inp.value wait 4 bot txt-animation 
 
       try {
-        
-        const botResponseText = await ChattingWithGemini(messageText);
-       chatMessagesEl.removeChild(typingIndicator);
-       addMessageToUI(botResponseText, 'bot');
+      const botResponseText = await ChattingWithGemini(messageText);
+      chatMessagesEl.removeChild(typingIndicator);  // remove animation
+      addMessageToUI(botResponseText, 'bot');      // apend responce of user
 
 // 🔊 Play the audio response (with cache-busting query)
       const audio = new Audio('https://llm-voice-bot.onrender.com/out.wav?ts=' + Date.now());
@@ -216,6 +219,9 @@
         console.error("Error talking to server:", error);
         chatMessagesEl.removeChild(typingIndicator);
         addMessageToUI("😢 Rohit sir ka server down ho gaya lagta hai!", 'bot');
+      } finally {
+        isProcessing = false;
+        sendButtonEl.disabled = false;
       }
     }
 
