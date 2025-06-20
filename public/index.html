@@ -73,7 +73,7 @@
   </div>
 
   <div class="welcome-banner">
-     Chat with Rohit sir - Ask your douts. # or might it take time to responce in form of audio so coperate.
+     Chat with Rohit sir - Ask your douts. # or might it take <strong style="color: aqua;">Some Time</strong> to responce in form of audio so <strong style="color: aqua;">Coperate</strong>.
   </div>
 
   <div class="chat-messages" id="chatMessages">
@@ -82,7 +82,6 @@
       <div class="bubble">
         Hey! 😊 Kaise ho? Kon sa concept nhi chmka? 💭
       </div>
-      <!-- <span class="bot-message-decoration right"></span> -->
     </div>
   </div>
 
@@ -104,28 +103,6 @@
 
 </body>
 <script> 
-
-  //  const chatBtn = document.getElementById("chatBtn");
-  // const backBtn = document.getElementById("backBtn");
-  // const hidekro = document.querySelector(".hidekro");
-  // const chatPage = document.getElementById("chatPage");
-  // const botposn = document.querySelector(".botposn")
-  // const social  = document.querySelector(".socials");
-
-  // chatBtn.addEventListener("click", () => {
-  //   hidekro.style.display = "none";
-  //   chatPage.style.display = "block";
-  //   social.style.display = "none";
-  //   botposn.style.display ="none"
-  // });
-
-  // backBtn.addEventListener("click", () => {
-  //   chatPage.style.display = "none";
-  //   botposn.style.display = "block"
-  //   hidekro.style.display = "block";
-  //   social.style.display = "block";
-  // });
-
  
   document.addEventListener('DOMContentLoaded', () => {
     const chatMessagesEl = document.getElementById('chatMessages');
@@ -175,18 +152,6 @@
     }
 
     // Send message to server
-    async function ChattingWithGemini(message) {
-      const response = await fetch("https://llm-voice-bot.onrender.com/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message })
-      });
-
-      const data = await response.json();
-      return data.reply;
-    }
 
     async function handleUserSendMessage() {
       if (isProcessing) return;
@@ -196,25 +161,50 @@
       isProcessing = true;
       sendButtonEl.disabled = true;
 
-      addMessageToUI(messageText, 'user');  //call that function or pass inp.value or sender user.
+      addMessageToUI(messageText, 'user');  
       userInputEl.value = '';
       userInputEl.focus();
 
-      const typingIndicator = addMessageToUI('', 'bot', true);  //after sending inp.value wait 4 bot txt-animation 
+      const typingIndicator = addMessageToUI('', 'bot', true);  
 
       try {
-      const botResponseText = await ChattingWithGemini(messageText);
-      chatMessagesEl.removeChild(typingIndicator);  // remove animation
-      addMessageToUI(botResponseText, 'bot');      // apend responce of user
+      
+    const response = await fetch("https://llm-voice-bot.onrender.com/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: messageText })
+      });
+
+      if (!response.ok || !response.body) {
+  throw new Error("No response body from server");
+}
+
+
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let result = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value);
+    result += chunk;
+
+    typingIndicator.innerHTML = `<div class="bubble">${result}</div>`;
+  }
+     
+typingIndicator.classList.remove('typing');
+typingIndicator.innerHTML = `<div class="bubble"><span class="message-text">${result}</span></div>`;
+
 
 // 🔊 Play the audio response (with cache-busting query)
       const audio = new Audio('https://llm-voice-bot.onrender.com/out.wav?ts=' + Date.now());
       audio.play();
 
 
-        // const botResponseText = await ChattingWithGemini(messageText);
-        // chatMessagesEl.removeChild(typingIndicator);
-        // addMessageToUI(botResponseText, 'bot');
       } catch (error) {
         console.error("Error talking to server:", error);
         chatMessagesEl.removeChild(typingIndicator);

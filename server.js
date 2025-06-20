@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = 5501;
-const ai = new GoogleGenAI({ apiKey: 'AIzaSyB0vmU9zScXSTYTuqdTDNkL8gEW4PV05Ps' }); // Replace with your key
+const ai = new GoogleGenAI({ apiKey: 'AIzaSyBdNAz8WjXnVZrLbfY7yb7OMxFgB7QNwR4' }); // Replace with your key
 
 const History = [];
 
@@ -37,6 +37,8 @@ async function saveWaveFile(filename, pcmData, channels = 1, rate = 24000, sampl
 }
 
 async function speakText(text, filename = 'out.wav') {
+
+  try{
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
     contents: [{ parts: [{ text }] }],
@@ -50,14 +52,35 @@ async function speakText(text, filename = 'out.wav') {
     }
   });
 
-  const data = response?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  const audioBuffer = Buffer.from(data, 'base64');
-  console.log("Audio buffer size:", audioBuffer.length);
-  console.log('✅ Audio saved to public/out.wav');
-  // await saveWaveFile(filename, audioBuffer);
-  await saveWaveFile(path.join(__dirname, 'public', filename), audioBuffer);
 
-  // await player.play({ path: filename });
+  console.log("TTS Response:", JSON.stringify(response, null, 2));
+
+
+  const data = response?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+  if (!data) 
+    {throw new Error("TTS data is missing.no audio return");}
+
+  const audioBuffer = Buffer.from(data, 'base64');
+
+  const filePath = path.join(__dirname, 'public', filename);
+  //  fs.writeFileSync(filePath, audioBuffer);
+  
+  const publicDir = path.join(__dirname, 'public');
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir);
+    }
+
+  await fs.promises.writeFile(filePath, audioBuffer)
+  console.log(`✅ Audio saved to ${filePath}`);
+
+  // ✅ Save wave file (in case needed)
+    await saveWaveFile(filePath, audioBuffer);
+}catch(err){
+  console.log("TTS Generation Failed:", err.message);
+  throw err;
+}
+  // await saveWaveFile(path.join(__dirname, 'public', filename), audioBuffer);
+
 }
 
 app.post('/ask', async (req, res) => {
@@ -69,7 +92,7 @@ app.post('/ask', async (req, res) => {
       parts: [{ text: message }]
     });
 
-    const result = await ai.models.generateContent({
+    const result = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash',
       contents: History,
       config: {
@@ -111,23 +134,27 @@ app.post('/ask', async (req, res) => {
 - **Word Limit:** Max 150 words (absolute hard cap)  
 - **No Fluff:** Ban analogies unless critical for understanding  
 
-      {important point if user ask question not releted to coadig reply ruddly,in hardcode voice}
-use end words like chmka,clear,kuch to bolo pop-con khne aay ho kya ..or create similar intractive words by your own according to relevency.. 
-     `,
+      {important point if user ask question not releted to coadig reply {ruddly} ,in hardcode voice}
+also use end words like chmka,clear,kuch to bolo pop-con khne aay ho kya.. use similar taunt and words which makes user connected `,
       }
     });
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Transfer-Encoding', 'chunked');
 
-    const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I didn't understand that.";
+    let finalResponse = '';
 
-    History.push({
-      role: 'model',
-      parts: [{ text: reply }]
-    });
+    
+    for await (const chunk of result) {
+      if (chunk.text) {
+        finalResponse += chunk.text;
+        res.write(chunk.text); // send partial text to frontend
+  }
+}
 
-    // Speak the text
-    await speakText(reply);
+await speakText(finalResponse);
+res.end();
+  
 
-    res.json({ reply });
   } catch (error) {
     console.error("API or TTS Error:", error);
     res.status(500).json({ reply: "Something went wrong." });
